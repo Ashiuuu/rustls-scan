@@ -4,7 +4,7 @@ use crate::models::{
 };
 use colored::*;
 
-pub fn print_report(report: &ScanReport, _hide_rejected: bool) {
+pub fn print_report(report: &ScanReport, hide_rejected: bool) {
     print_banner();
     print_target_info(report);
     print_protocol_section(&report.protocols);
@@ -16,6 +16,7 @@ pub fn print_report(report: &ScanReport, _hide_rejected: bool) {
         &report.supported_ciphers,
         report.rejected_ciphers_count,
         report.server_cipher_preference.as_deref(),
+        hide_rejected,
     );
     print_findings_section(&report.findings);
     print_summary(report);
@@ -24,129 +25,75 @@ pub fn print_report(report: &ScanReport, _hide_rejected: bool) {
 fn print_banner() {
     println!();
     println!(
-        "{}",
-        "╔══════════════════════════════════════════════════════════════════════╗"
-            .bright_cyan()
-            .bold()
-    );
-    println!(
-        "{}  {}  {}",
-        "║".bright_cyan().bold(),
-        "rustssl_check — Fast TLS/SSL Protocol, Cipher & Cert Auditor"
-            .bright_white()
-            .bold(),
-        "║".bright_cyan().bold()
-    );
-    println!(
-        "{}",
-        "╚══════════════════════════════════════════════════════════════════════╝"
-            .bright_cyan()
-            .bold()
+        "{} {}",
+        "rustssl_check".bold(),
+        "— TLS/SSL Protocol, Cipher & Cert Auditor".dimmed()
     );
     println!();
+}
+
+fn print_section_header(title: &str) {
+    let line_len = 72usize.saturating_sub(title.len() + 4);
+    println!(
+        "── {} {}",
+        title.bold(),
+        "─".repeat(line_len).dimmed()
+    );
 }
 
 fn print_target_info(report: &ScanReport) {
-    println!("{}", "─── [ TARGET INFORMATION ] ────────────────────────────────────────────".bright_blue().bold());
-    println!(
-        "  {:<18}: {}",
-        "Target Host".bold(),
-        report.target_host.bright_white().bold()
-    );
-    println!(
-        "  {:<18}: {}",
-        "Port".bold(),
-        report.target_port.to_string().cyan()
-    );
-    println!(
-        "  {:<18}: {}",
-        "Resolved IP".bold(),
-        report.target_ip.cyan()
-    );
-    println!(
-        "  {:<18}: {} ms",
-        "Connection RTT".bold(),
-        report.rtt_ms.to_string().yellow()
-    );
-    println!(
-        "  {:<18}: {} ms",
-        "Scan Duration".bold(),
-        report.scan_duration_ms.to_string().yellow()
-    );
+    print_section_header("Target Information");
+    println!("  {:<18}: {}", "Target Host", report.target_host.bold());
+    println!("  {:<18}: {}", "Port", report.target_port);
+    println!("  {:<18}: {}", "Resolved IP", report.target_ip);
+    println!("  {:<18}: {} ms", "Connection RTT", report.rtt_ms);
+    println!("  {:<18}: {} ms", "Scan Duration", report.scan_duration_ms);
     println!();
 }
 
-fn center_text(text: &str, width: usize) -> String {
-    if text.len() >= width {
-        return text.to_string();
-    }
-    let total_spaces = width - text.len();
-    let left_spaces = total_spaces / 2;
-    let right_spaces = total_spaces - left_spaces;
-    format!("{}{}{}", " ".repeat(left_spaces), text, " ".repeat(right_spaces))
-}
-
 fn format_rating(rating: SecurityRating) -> ColoredString {
-    let centered = center_text(rating.badge_text(), 15);
     match rating {
-        SecurityRating::Recommended => centered.on_green().bold().white(),
-        SecurityRating::Secure => centered.on_bright_green().bold().black(),
-        SecurityRating::Deprecated => centered.on_yellow().bold().black(),
-        SecurityRating::Weak => centered.on_bright_yellow().bold().black(),
-        SecurityRating::Insecure => centered.on_red().bold().white(),
-        SecurityRating::Critical => centered.on_bright_red().bold().white(),
+        SecurityRating::Recommended => "Recommended".green(),
+        SecurityRating::Secure => "Secure".green(),
+        SecurityRating::Deprecated => "Deprecated".yellow(),
+        SecurityRating::Weak => "Weak".yellow(),
+        SecurityRating::Insecure => "Insecure".red(),
+        SecurityRating::Critical => "Critical".red().bold(),
     }
-}
-
-fn format_safe_badge() -> ColoredString {
-    let centered = center_text("SAFE", 15);
-    centered.on_bright_black().bold().white()
 }
 
 fn print_protocol_section(protocols: &[ProtocolResult]) {
-    println!("{}", "─── [ PROTOCOL SUPPORT & OBSOLESCENCE ] ────────────────────────────────".bright_blue().bold());
+    print_section_header("Protocol Support & Obsolescence");
     println!(
-        "  {:<12} {:<22} {:<17} {}",
+        "  {:<12} {:<18} {}",
         "Protocol".bold(),
         "Status".bold(),
-        "Rating".bold(),
-        "Details / RFC Compliance".bold()
+        "Rating".bold()
     );
-    println!("  {}", "─".repeat(74).dimmed());
+    println!("  {}", "─".repeat(45).dimmed());
 
     for p in protocols {
-        let (status_plain, is_obs) = if p.supported {
+        let status_str = if p.supported {
             if p.protocol.is_obsolete() {
-                ("Offered (Obsolete)", true)
+                format!("{:<18}", "Offered (Obsolete)").red()
             } else {
-                ("Offered (Active)", false)
+                format!("{:<18}", "Offered").green()
             }
         } else {
-            ("Not Offered", false)
+            format!("{:<18}", "Not Offered").dimmed()
         };
 
-        let status_colored = if p.supported {
-            if is_obs {
-                format!("{:<22}", status_plain).bright_red().bold()
-            } else {
-                format!("{:<22}", status_plain).bright_green().bold()
-            }
-        } else {
-            format!("{:<22}", status_plain).dimmed()
-        };
-
-        let rating_badge = if p.supported {
+        let rating_str = if p.supported {
             format_rating(p.rating)
         } else {
-            format_safe_badge()
+            "-".dimmed()
         };
 
         println!(
-            "  {:<12} {} {} {}",
-            p.protocol.name().bold(),
-            status_colored,
-            rating_badge,
-            p.notes.dimmed()
+            "  {:<12} {} {}",
+            p.protocol.name(),
+            status_str,
+            rating_str
         );
     }
     println!();
@@ -154,36 +101,36 @@ fn print_protocol_section(protocols: &[ProtocolResult]) {
 
 fn print_certificate_section(cert: &CertificateChainReport) {
     let leaf = &cert.leaf;
-    println!("{}", "─── [ CERTIFICATE INFORMATION ] ────────────────────────────────────────".bright_blue().bold());
+    print_section_header("Certificate Information");
 
     // Subject
     let sub_cn = leaf.subject_cn.as_deref().unwrap_or("N/A");
     let sub_o = leaf.subject_o.as_deref().unwrap_or("N/A");
-    println!("  {:<20}: {}", "Common Name (CN)".bold(), sub_cn.bright_white().bold());
+    println!("  {:<20}: {}", "Common Name (CN)", sub_cn);
     if sub_o != "N/A" {
-        println!("  {:<20}: {}", "Organization (O)".bold(), sub_o.white());
+        println!("  {:<20}: {}", "Organization (O)", sub_o);
     }
 
     // Issuer
     let iss_cn = leaf.issuer_cn.as_deref().unwrap_or("N/A");
     let iss_o = leaf.issuer_o.as_deref().unwrap_or("N/A");
-    println!("  {:<20}: {}", "Issuer CN".bold(), iss_cn.bright_cyan());
+    println!("  {:<20}: {}", "Issuer CN", iss_cn);
     if iss_o != "N/A" {
-        println!("  {:<20}: {}", "Issuer Org".bold(), iss_o.cyan());
+        println!("  {:<20}: {}", "Issuer Org", iss_o);
     }
 
     // Validity
     let validity_status = if leaf.is_expired {
-        format!("EXPIRED ({} days ago)", leaf.days_remaining.abs()).bright_red().bold()
+        format!("Expired ({} days ago)", leaf.days_remaining.abs()).red().bold()
     } else if leaf.days_remaining <= 14 {
-        format!("EXPIRING SOON ({} days left)", leaf.days_remaining).bright_yellow().bold()
+        format!("Expiring soon ({} days left)", leaf.days_remaining).yellow().bold()
     } else {
-        format!("Valid ({} days remaining)", leaf.days_remaining).bright_green().bold()
+        format!("Valid ({} days remaining)", leaf.days_remaining).green()
     };
 
-    println!("  {:<20}: {}", "Validity Status".bold(), validity_status);
-    println!("  {:<20}: {}", "Not Before".bold(), leaf.not_before.dimmed());
-    println!("  {:<20}: {}", "Not After".bold(), leaf.not_after.dimmed());
+    println!("  {:<20}: {}", "Validity Status", validity_status);
+    println!("  {:<20}: {}", "Not Before", leaf.not_before.dimmed());
+    println!("  {:<20}: {}", "Not After", leaf.not_after.dimmed());
 
     // SANs
     if !leaf.sans.is_empty() {
@@ -192,23 +139,21 @@ fn print_certificate_section(cert: &CertificateChainReport) {
         } else {
             format!("{} (and {} more...)", leaf.sans[..5].join(", "), leaf.sans.len() - 5)
         };
-        println!("  {:<20}: {}", "SANs".bold(), san_preview.bright_blue());
+        println!("  {:<20}: {}", "SANs", san_preview);
     }
 
     // Key & Signature
-    let key_rating_badge = format_rating(leaf.key_rating);
-    let sig_rating_badge = format_rating(leaf.sig_alg_rating);
     println!(
-        "  {:<20}: {} [{}]",
-        "Public Key".bold(),
-        leaf.public_key_type.bright_white(),
-        key_rating_badge
+        "  {:<20}: {} ({})",
+        "Public Key",
+        leaf.public_key_type,
+        format_rating(leaf.key_rating)
     );
     println!(
-        "  {:<20}: {} [{}]",
-        "Signature Alg".bold(),
-        leaf.signature_algorithm.bright_white(),
-        sig_rating_badge
+        "  {:<20}: {} ({})",
+        "Signature Alg",
+        leaf.signature_algorithm,
+        format_rating(leaf.sig_alg_rating)
     );
 
     // Trust Chain
@@ -216,32 +161,32 @@ fn print_certificate_section(cert: &CertificateChainReport) {
         if valid {
             println!(
                 "  {:<20}: {}",
-                "Mozilla Trust Chain".bold(),
-                "VERIFIED (Trusted Root CA)".bright_green().bold()
+                "Mozilla Trust Chain",
+                "Verified (Trusted Root CA)".green()
             );
         } else {
             let err = cert.trust_error.as_deref().unwrap_or("Untrusted / Self-signed");
             println!(
                 "  {:<20}: {} ({})",
-                "Mozilla Trust Chain".bold(),
-                "UNVERIFIED / UNTRUSTED".bright_red().bold(),
-                err.red()
+                "Mozilla Trust Chain",
+                "Unverified / Untrusted".red(),
+                err.dimmed()
             );
         }
     }
 
     // Fingerprints
-    println!("  {:<20}: {}", "SHA-256 Fingerprint".bold(), leaf.sha256_fingerprint.dimmed());
-    println!("  {:<20}: {}", "Serial Number".bold(), leaf.serial_number.dimmed());
+    println!("  {:<20}: {}", "SHA-256 Fingerprint", leaf.sha256_fingerprint.dimmed());
+    println!("  {:<20}: {}", "Serial Number", leaf.serial_number.dimmed());
 
     // Intermediates
     if !cert.intermediates.is_empty() {
-        println!("  {:<20}: {} certificate(s)", "Chain Length".bold(), cert.intermediates.len() + 1);
+        println!("  {:<20}: {} certificate(s)", "Chain Length", cert.intermediates.len() + 1);
         for (i, inter) in cert.intermediates.iter().enumerate() {
             println!(
                 "    Intermediate #{}: CN={}, Org={}",
                 i + 1,
-                inter.subject_cn.as_deref().unwrap_or("Unknown").bright_cyan(),
+                inter.subject_cn.as_deref().unwrap_or("Unknown"),
                 inter.subject_o.as_deref().unwrap_or("Unknown").dimmed()
             );
         }
@@ -254,53 +199,56 @@ fn print_cipher_section_by_protocol(
     all_supported: &[CipherSuiteInfo],
     rejected_count: usize,
     preference: Option<&str>,
+    hide_rejected: bool,
 ) {
-    println!("{}", "─── [ SUPPORTED CIPHER SUITES BY PROTOCOL ] ────────────────────────────".bright_blue().bold());
+    print_section_header("Supported Cipher Suites by Protocol");
     if let Some(pref) = preference {
-        println!("  {:<20}: {}", "Cipher Ordering".bold(), pref.bright_cyan());
+        println!("  {:<18}: {}", "Cipher Ordering", pref);
     }
-    println!(
-        "  {:<20}: {} unique supported across {} active protocol(s) ({} rejected)",
-        "Summary".bold(),
-        all_supported.len().to_string().bright_green().bold(),
-        groups.len().to_string().cyan().bold(),
-        rejected_count.to_string().dimmed()
-    );
+    let summary_str = if hide_rejected {
+        format!(
+            "{} unique supported across {} active protocol(s)",
+            all_supported.len(),
+            groups.len(),
+        )
+    } else {
+        format!(
+            "{} unique supported across {} active protocol(s) ({} rejected)",
+            all_supported.len(),
+            groups.len(),
+            rejected_count,
+        )
+    };
+    println!("  {:<18}: {}", "Summary", summary_str);
     println!();
 
     if groups.is_empty() {
-        println!("  {}", "No supported ciphers detected from scan suite.".yellow());
+        println!("  {}", "No supported ciphers detected from scan suite.".dimmed());
         println!();
         return;
     }
 
     for group in groups {
-        let proto_badge = if group.protocol.is_obsolete() {
-            format!("[ {} ]", group.protocol.name()).bright_red().bold()
+        let proto_header = if group.protocol.is_obsolete() {
+            format!("[ {} ] ({} cipher(s) supported)", group.protocol.name(), group.ciphers.len()).red()
         } else {
-            format!("[ {} ]", group.protocol.name()).bright_green().bold()
+            format!("[ {} ] ({} cipher(s) supported)", group.protocol.name(), group.ciphers.len()).bold()
         };
 
+        println!("  {}", proto_header);
         println!(
-            "  ┌─ {} ── ({} cipher(s) supported) {}",
-            proto_badge,
-            group.ciphers.len().to_string().bold(),
-            "─".repeat(50).dimmed()
-        );
-        println!(
-            "  │ {:<8} {:<45} {:<14} {:<8} {:<17} {}",
+            "    {:<8} {:<45} {:<14} {:<8} {}",
             "ID".bold(),
             "IANA Cipher Name".bold(),
             "KeyEx".bold(),
             "Bits".bold(),
-            "Rating".bold(),
-            "Notes / Weaknesses".bold()
+            "Rating".bold()
         );
-        println!("  │ {}", "─".repeat(110).dimmed());
+        println!("    {}", "─".repeat(88).dimmed());
 
         for c in &group.ciphers {
             let id_str = format!("{:<8}", format!("0x{:04x}", c.id)).dimmed();
-            let name_str = format!("{:<45}", c.iana_name).bright_white().bold();
+            let name_str = format!("{:<45}", c.iana_name);
 
             let kx_plain = if c.forward_secrecy {
                 format!("{}+FS", c.key_exchange)
@@ -310,87 +258,89 @@ fn print_cipher_section_by_protocol(
             let kx_str = if c.forward_secrecy {
                 format!("{:<14}", kx_plain).green()
             } else {
-                format!("{:<14}", kx_plain).yellow()
+                format!("{:<14}", kx_plain).dimmed()
             };
 
             let bits_str = format!("{:<8}", format!("{}b", c.key_bits)).dimmed();
-            let rating_badge = format_rating(c.rating);
-            let note_str = c.vulnerability_note.unwrap_or("").bright_yellow();
+            let rating_str = format_rating(c.rating);
 
             println!(
-                "  │ {} {} {} {} {} {}",
+                "    {} {} {} {} {}",
                 id_str,
                 name_str,
                 kx_str,
                 bits_str,
-                rating_badge,
-                note_str
+                rating_str
             );
         }
-        println!("  └{}", "─".repeat(112).dimmed());
         println!();
     }
 }
 
 fn print_findings_section(findings: &[VulnerabilityFinding]) {
-    println!("{}", "─── [ SECURITY FINDINGS & VULNERABILITIES ] ────────────────────────────".bright_blue().bold());
+    print_section_header("Security Findings & Vulnerabilities");
 
     if findings.is_empty() {
         println!(
             "  {} {}",
-            "✓".bright_green().bold(),
-            "No obsolete protocols, weak ciphers, or certificate defects detected! Server configuration meets modern security guidelines.".bright_green()
+            "✓".green(),
+            "No obsolete protocols, weak ciphers, or certificate defects detected.".green()
         );
         println!();
         return;
     }
 
     for f in findings {
-        let (icon, badge) = match f.rating {
-            SecurityRating::Critical => ("✗".bright_red().bold(), "CRITICAL".on_bright_red().bold().white()),
-            SecurityRating::Insecure => ("✗".red().bold(), "INSECURE".on_red().bold().white()),
-            SecurityRating::Deprecated => ("⚠".yellow().bold(), "DEPRECATED".on_yellow().bold().black()),
-            SecurityRating::Weak => ("⚠".bright_yellow().bold(), "WEAK".on_bright_yellow().bold().black()),
-            _ => ("ℹ".cyan().bold(), "INFO".on_cyan().bold().black()),
+        let (badge, title_color) = match f.rating {
+            SecurityRating::Critical => ("[Critical]".red().bold(), f.title.red().bold()),
+            SecurityRating::Insecure => ("[Insecure]".red(), f.title.red()),
+            SecurityRating::Deprecated => ("[Deprecated]".yellow(), f.title.yellow()),
+            SecurityRating::Weak => ("[Weak]".yellow(), f.title.yellow()),
+            _ => ("[Info]".cyan(), f.title.cyan()),
         };
 
-        println!("  {} [{}] {}", icon, badge, f.title.bright_white().bold());
-        println!("     {}: {}", "Description".bold(), f.description.white());
-        println!("     {}: {}", "Remediation".bold(), f.remediation.bright_cyan());
+        println!("  {} {}", badge, title_color);
+        println!("    {}", f.description);
         println!();
     }
 }
 
 fn print_summary(report: &ScanReport) {
-    println!("{}", "─── [ OVERALL SECURITY POSTURE ] ───────────────────────────────────────".bright_blue().bold());
-    let (grade_str, desc_str) = match report.overall_rating {
+    print_section_header("Overall Security Posture");
+    let (grade_label, grade_color, desc_str) = match report.overall_rating {
         SecurityRating::Recommended => (
-            " GRADE: A+ (RECOMMENDED) ".on_green().bold().white(),
+            "Grade: A+ (Recommended)",
+            colored::Color::Green,
             "Modern TLS 1.3/1.2 only, robust AEAD ciphers with Forward Secrecy, valid certificate.",
         ),
         SecurityRating::Secure => (
-            " GRADE: A (SECURE) ".on_bright_green().bold().black(),
+            "Grade: A (Secure)",
+            colored::Color::Green,
             "Secure configuration, no critical or obsolete protocols/ciphers.",
         ),
         SecurityRating::Deprecated => (
-            " GRADE: B (DEPRECATED PROTOCOLS/CIPHERS) ".on_yellow().bold().black(),
+            "Grade: B (Deprecated protocols/ciphers)",
+            colored::Color::Yellow,
             "Server enables deprecated protocols (TLS 1.0/1.1) or legacy cipher suites.",
         ),
         SecurityRating::Weak => (
-            " GRADE: C (WEAK CIPHERS/CERT) ".on_bright_yellow().bold().black(),
+            "Grade: C (Weak ciphers/cert)",
+            colored::Color::Yellow,
             "Configuration contains weak ciphers (CBC mode, static RSA, or key size issues).",
         ),
         SecurityRating::Insecure => (
-            " GRADE: F (INSECURE CONFIGURATION) ".on_red().bold().white(),
+            "Grade: F (Insecure configuration)",
+            colored::Color::Red,
             "Vulnerable to known attacks (3DES Sweet32, RC4, or untrusted/expired certificate).",
         ),
         SecurityRating::Critical => (
-            " GRADE: F-CRITICAL (IMMEDIATE ACTION REQUIRED) ".on_bright_red().bold().white(),
+            "Grade: F-Critical (Immediate action required)",
+            colored::Color::Red,
             "Critical vulnerabilities present (SSLv2, SSLv3 POODLE, NULL cleartext, or FREAK export ciphers).",
         ),
     };
 
-    println!("  {}", grade_str);
-    println!("  {}", desc_str.bright_white());
+    println!("  {}", grade_label.color(grade_color).bold());
+    println!("  {}", desc_str.dimmed());
     println!();
 }
