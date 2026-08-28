@@ -29,18 +29,11 @@ pub async fn probe_protocol(
         crate::models::SecurityRating::Recommended
     };
 
-    let notes = if supported {
-        protocol.security_notes().to_string()
-    } else {
-        "Not offered (Secure)".to_string()
-    };
-
     (
         ProtocolResult {
             protocol,
             supported,
             rating,
-            notes,
         },
         certs,
     )

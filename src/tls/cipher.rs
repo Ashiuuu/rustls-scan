@@ -17,7 +17,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x1302,
@@ -32,7 +31,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x1303,
@@ -47,7 +45,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x1304,
@@ -62,7 +59,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Secure,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x1305,
@@ -77,7 +73,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Secure,
-        vulnerability_note: None,
     },
 
     // ==========================================
@@ -96,7 +91,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xc02c,
@@ -111,7 +105,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xc02f,
@@ -126,7 +119,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xc030,
@@ -141,7 +133,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xcca9,
@@ -156,7 +147,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xcca8,
@@ -171,7 +161,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Recommended,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0xccaa,
@@ -186,7 +175,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Secure,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x009e,
@@ -201,7 +189,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Secure,
-        vulnerability_note: None,
     },
     CipherSuiteInfo {
         id: 0x009f,
@@ -216,7 +203,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: false,
         rating: SecurityRating::Secure,
-        vulnerability_note: None,
     },
 
     // ==========================================
@@ -235,7 +221,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
     CipherSuiteInfo {
         id: 0xc028,
@@ -250,7 +235,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
     CipherSuiteInfo {
         id: 0xc023,
@@ -265,7 +249,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
     CipherSuiteInfo {
         id: 0xc024,
@@ -280,7 +263,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
     CipherSuiteInfo {
         id: 0x0067,
@@ -295,7 +277,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
     CipherSuiteInfo {
         id: 0x006b,
@@ -310,7 +291,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("CBC mode padding oracle vulnerability (Lucky 13)"),
     },
 
     // ==========================================
@@ -329,7 +309,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0xc014,
@@ -344,7 +323,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0xc009,
@@ -359,7 +337,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0xc00a,
@@ -374,7 +351,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0x0033,
@@ -389,7 +365,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0x0039,
@@ -404,7 +379,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("SHA-1 MAC (weak) & CBC mode"),
     },
 
     // ==========================================
@@ -423,7 +397,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy (Static RSA key exchange)"),
     },
     CipherSuiteInfo {
         id: 0x009d,
@@ -438,7 +411,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy (Static RSA key exchange)"),
     },
     CipherSuiteInfo {
         id: 0x003c,
@@ -453,7 +425,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0x003d,
@@ -468,7 +439,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0x002f,
@@ -483,7 +453,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("No Forward Secrecy, SHA-1 MAC & CBC mode"),
     },
     CipherSuiteInfo {
         id: 0x0035,
@@ -498,7 +467,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("No Forward Secrecy, SHA-1 MAC & CBC mode"),
     },
 
     // ==========================================
@@ -517,7 +485,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("Vulnerable to Sweet32 attack (64-bit block size)"),
     },
     CipherSuiteInfo {
         id: 0xc012,
@@ -532,7 +499,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("Vulnerable to Sweet32 attack (64-bit block size)"),
     },
     CipherSuiteInfo {
         id: 0xc008,
@@ -547,7 +513,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("Vulnerable to Sweet32 attack (64-bit block size)"),
     },
     CipherSuiteInfo {
         id: 0x0016,
@@ -562,7 +527,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("Vulnerable to Sweet32 attack (64-bit block size)"),
     },
 
     // ==========================================
@@ -581,7 +545,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("RC4 stream cipher broken (Bar Mitzvah / RC4 NOMORE)"),
     },
     CipherSuiteInfo {
         id: 0x0004,
@@ -596,7 +559,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("RC4 stream cipher broken & MD5 MAC"),
     },
     CipherSuiteInfo {
         id: 0xc011,
@@ -611,7 +573,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("RC4 stream cipher broken"),
     },
     CipherSuiteInfo {
         id: 0xc007,
@@ -626,7 +587,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Insecure,
-        vulnerability_note: Some("RC4 stream cipher broken"),
     },
 
     // ==========================================
@@ -645,7 +605,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("DES 56-bit broken cipher (easily brute-forced)"),
     },
     CipherSuiteInfo {
         id: 0x0015,
@@ -660,7 +619,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("DES 56-bit broken cipher (easily brute-forced)"),
     },
 
     // ==========================================
@@ -679,7 +637,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Export grade 40-bit key (FREAK attack)"),
     },
     CipherSuiteInfo {
         id: 0x0006,
@@ -694,7 +651,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Export grade 40-bit key (FREAK attack)"),
     },
     CipherSuiteInfo {
         id: 0x0008,
@@ -709,7 +665,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Export grade 40-bit key (FREAK attack)"),
     },
     CipherSuiteInfo {
         id: 0x0014,
@@ -724,7 +679,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Export grade 40-bit key (Logjam attack)"),
     },
 
     // ==========================================
@@ -743,7 +697,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0x001b,
@@ -758,7 +711,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0x0034,
@@ -773,7 +725,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0x003a,
@@ -788,7 +739,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0x00a6,
@@ -803,7 +753,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0x00a7,
@@ -818,7 +767,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0xc018,
@@ -833,7 +781,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0xc019,
@@ -848,7 +795,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
     CipherSuiteInfo {
         id: 0xc01a,
@@ -863,7 +809,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Anonymous key exchange (vulnerable to active MITM)"),
     },
 
     // ==========================================
@@ -882,7 +827,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0x0002,
@@ -897,7 +841,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0x003b,
@@ -912,7 +855,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0xc001,
@@ -927,7 +869,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0xc006,
@@ -942,7 +883,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0xc00b,
@@ -957,7 +897,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
     CipherSuiteInfo {
         id: 0xc010,
@@ -972,7 +911,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Critical,
-        vulnerability_note: Some("Null cipher: Traffic is unencrypted!"),
     },
 
     // ==========================================
@@ -991,7 +929,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("No Forward Secrecy & SHA-1 MAC"),
     },
     CipherSuiteInfo {
         id: 0x0084,
@@ -1006,7 +943,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("No Forward Secrecy & SHA-1 MAC"),
     },
     CipherSuiteInfo {
         id: 0x0096,
@@ -1021,7 +957,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: false,
         is_obsolete: true,
         rating: SecurityRating::Deprecated,
-        vulnerability_note: Some("Legacy SEED cipher, No Forward Secrecy"),
     },
     CipherSuiteInfo {
         id: 0xc07a,
@@ -1036,7 +971,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy (Static RSA)"),
     },
     CipherSuiteInfo {
         id: 0xc07b,
@@ -1051,7 +985,6 @@ pub const ALL_CIPHERS: &[CipherSuiteInfo] = &[
         is_aead: true,
         is_obsolete: true,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("No Forward Secrecy (Static RSA)"),
     },
 ];
 
@@ -1073,6 +1006,5 @@ pub fn unknown_cipher(id: u16) -> CipherSuiteInfo {
         is_aead: false,
         is_obsolete: false,
         rating: SecurityRating::Weak,
-        vulnerability_note: Some("Unrecognized cipher suite ID"),
     }
 }

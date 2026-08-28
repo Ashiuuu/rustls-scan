@@ -4,22 +4,36 @@ use crate::models::{
 };
 use colored::*;
 
-pub fn print_report(report: &ScanReport, hide_rejected: bool) {
+pub fn print_report(report: &ScanReport, hide_rejected: bool, vuln_only: bool) {
     print_banner();
     print_target_info(report);
-    print_protocol_section(&report.protocols);
-    if let Some(ref cert) = report.certificate {
-        print_certificate_section(cert);
+
+    if vuln_only {
+        print_vulnerable_protocol_section(&report.protocols);
+        if let Some(ref cert) = report.certificate {
+            print_vulnerable_certificate_section(cert);
+        }
+        print_vulnerable_cipher_section_by_protocol(
+            &report.protocol_ciphers,
+            &report.supported_ciphers,
+        );
+        print_findings_section(&report.findings);
+        print_summary(report);
+    } else {
+        print_protocol_section(&report.protocols);
+        if let Some(ref cert) = report.certificate {
+            print_certificate_section(cert);
+        }
+        print_cipher_section_by_protocol(
+            &report.protocol_ciphers,
+            &report.supported_ciphers,
+            report.rejected_ciphers_count,
+            report.server_cipher_preference.as_deref(),
+            hide_rejected,
+        );
+        print_findings_section(&report.findings);
+        print_summary(report);
     }
-    print_cipher_section_by_protocol(
-        &report.protocol_ciphers,
-        &report.supported_ciphers,
-        report.rejected_ciphers_count,
-        report.server_cipher_preference.as_deref(),
-        hide_rejected,
-    );
-    print_findings_section(&report.findings);
-    print_summary(report);
 }
 
 fn print_banner() {
@@ -95,6 +109,36 @@ fn print_protocol_section(protocols: &[ProtocolResult]) {
             status_str,
             rating_str
         );
+    }
+    println!();
+}
+
+fn print_vulnerable_protocol_section(protocols: &[ProtocolResult]) {
+    print_section_header("Vulnerable Protocols");
+
+    let vuln_protos: Vec<&ProtocolResult> = protocols
+        .iter()
+        .filter(|p| p.supported && (p.protocol.is_obsolete() || p.rating.is_vulnerable()))
+        .collect();
+
+    if vuln_protos.is_empty() {
+        println!("  {}", "(No obsolete or deprecated protocols offered)".dimmed());
+        println!();
+        return;
+    }
+
+    println!(
+        "  {:<12} {:<18} {}",
+        "Protocol".bold(),
+        "Status".bold(),
+        "Rating".bold()
+    );
+    println!("  {}", "─".repeat(45).dimmed());
+
+    for p in vuln_protos {
+        let status_str = format!("{:<18}", "Offered (Obsolete)").red();
+        let rating_str = format_rating(p.rating);
+        println!("  {:<12} {} {}", p.protocol.name(), status_str, rating_str);
     }
     println!();
 }
@@ -194,6 +238,67 @@ fn print_certificate_section(cert: &CertificateChainReport) {
     println!();
 }
 
+fn print_vulnerable_certificate_section(cert: &CertificateChainReport) {
+    let leaf = &cert.leaf;
+    let has_issue = leaf.is_expired
+        || leaf.days_remaining <= 14
+        || leaf.is_not_yet_valid
+        || leaf.key_rating.is_vulnerable()
+        || leaf.sig_alg_rating.is_vulnerable()
+        || cert.trust_valid == Some(false);
+
+    if !has_issue {
+        return;
+    }
+
+    print_section_header("Certificate Security Issues");
+    let sub_cn = leaf.subject_cn.as_deref().unwrap_or("N/A");
+    println!("  {:<20}: {}", "Common Name (CN)", sub_cn);
+
+    if leaf.is_expired {
+        println!(
+            "  {:<20}: {}",
+            "Validity Status",
+            format!("Expired ({} days ago)", leaf.days_remaining.abs()).red().bold()
+        );
+    } else if leaf.days_remaining <= 14 {
+        println!(
+            "  {:<20}: {}",
+            "Validity Status",
+            format!("Expiring soon ({} days left)", leaf.days_remaining).yellow().bold()
+        );
+    }
+
+    if leaf.key_rating.is_vulnerable() {
+        println!(
+            "  {:<20}: {} ({})",
+            "Public Key",
+            leaf.public_key_type,
+            format_rating(leaf.key_rating)
+        );
+    }
+
+    if leaf.sig_alg_rating.is_vulnerable() {
+        println!(
+            "  {:<20}: {} ({})",
+            "Signature Alg",
+            leaf.signature_algorithm,
+            format_rating(leaf.sig_alg_rating)
+        );
+    }
+
+    if let Some(false) = cert.trust_valid {
+        let err = cert.trust_error.as_deref().unwrap_or("Untrusted / Self-signed");
+        println!(
+            "  {:<20}: {} ({})",
+            "Mozilla Trust Chain",
+            "Unverified / Untrusted".red(),
+            err.dimmed()
+        );
+    }
+    println!();
+}
+
 fn print_cipher_section_by_protocol(
     groups: &[ProtocolCipherGroup],
     all_supported: &[CipherSuiteInfo],
@@ -247,6 +352,84 @@ fn print_cipher_section_by_protocol(
         println!("    {}", "─".repeat(88).dimmed());
 
         for c in &group.ciphers {
+            let id_str = format!("{:<8}", format!("0x{:04x}", c.id)).dimmed();
+            let name_str = format!("{:<45}", c.iana_name);
+
+            let kx_plain = if c.forward_secrecy {
+                format!("{}+FS", c.key_exchange)
+            } else {
+                c.key_exchange.to_string()
+            };
+            let kx_str = if c.forward_secrecy {
+                format!("{:<14}", kx_plain).green()
+            } else {
+                format!("{:<14}", kx_plain).dimmed()
+            };
+
+            let bits_str = format!("{:<8}", format!("{}b", c.key_bits)).dimmed();
+            let rating_str = format_rating(c.rating);
+
+            println!(
+                "    {} {} {} {} {}",
+                id_str,
+                name_str,
+                kx_str,
+                bits_str,
+                rating_str
+            );
+        }
+        println!();
+    }
+}
+
+fn print_vulnerable_cipher_section_by_protocol(
+    groups: &[ProtocolCipherGroup],
+    all_supported: &[CipherSuiteInfo],
+) {
+    print_section_header("Vulnerable Cipher Suites");
+    let vuln_ciphers: Vec<&CipherSuiteInfo> =
+        all_supported.iter().filter(|c| c.is_vulnerable()).collect();
+    let secure_count = all_supported.len().saturating_sub(vuln_ciphers.len());
+
+    if vuln_ciphers.is_empty() {
+        println!(
+            "  Summary           : No vulnerable ciphers detected ({} secure cipher(s) omitted)",
+            secure_count
+        );
+        println!();
+        return;
+    }
+
+    println!(
+        "  Summary           : {} vulnerable cipher(s) detected ({} secure cipher(s) omitted)",
+        vuln_ciphers.len(),
+        secure_count
+    );
+    println!();
+
+    for group in groups {
+        let group_vuln: Vec<&CipherSuiteInfo> =
+            group.ciphers.iter().filter(|c| c.is_vulnerable()).collect();
+        if group_vuln.is_empty() {
+            continue;
+        }
+
+        println!(
+            "  [ {} ] ({} vulnerable cipher(s))",
+            group.protocol.name().bold(),
+            group_vuln.len()
+        );
+        println!(
+            "    {:<8} {:<45} {:<14} {:<8} {}",
+            "ID".bold(),
+            "IANA Cipher Name".bold(),
+            "KeyEx".bold(),
+            "Bits".bold(),
+            "Rating".bold()
+        );
+        println!("    {}", "─".repeat(88).dimmed());
+
+        for c in group_vuln {
             let id_str = format!("{:<8}", format!("0x{:04x}", c.id)).dimmed();
             let name_str = format!("{:<45}", c.iana_name);
 

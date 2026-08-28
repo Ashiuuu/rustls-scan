@@ -17,7 +17,6 @@ fn test_cipher_database_integrity() {
     let des3 = find_cipher(0x000a).expect("DES-CBC3-SHA must exist");
     assert_eq!(des3.rating, SecurityRating::Insecure);
     assert!(des3.is_obsolete);
-    assert!(des3.vulnerability_note.unwrap().contains("Sweet32"));
 
     // Check Export RC4 cipher
     let exp_rc4 = find_cipher(0x0003).expect("EXP-RC4-MD5 must exist");
@@ -102,4 +101,65 @@ fn test_server_alert_parser() {
         }
         _ => panic!("Expected alert response"),
     }
+}
+
+#[test]
+fn test_cipher_vulnerability_classification() {
+    let rec = find_cipher(0x1301).unwrap();
+    assert!(!rec.is_vulnerable());
+
+    let sec = find_cipher(0xc02f).unwrap();
+    assert!(!sec.is_vulnerable());
+
+    let weak_cbc = find_cipher(0xc027).unwrap();
+    assert!(weak_cbc.is_vulnerable());
+
+    let insec_3des = find_cipher(0x000a).unwrap();
+    assert!(insec_3des.is_vulnerable());
+
+    let crit_null = find_cipher(0x0002).unwrap();
+    assert!(crit_null.is_vulnerable());
+}
+
+#[test]
+fn test_scan_report_filter_vulnerable_ciphers() {
+    use rustssl_check::models::{ProtocolCipherGroup, ScanReport};
+
+    let c_rec = find_cipher(0x1301).unwrap();
+    let c_weak = find_cipher(0xc027).unwrap();
+    let c_3des = find_cipher(0x000a).unwrap();
+
+    let mut report = ScanReport {
+        target_host: "example.com".to_string(),
+        target_port: 443,
+        target_ip: "127.0.0.1".to_string(),
+        rtt_ms: 10,
+        protocols: vec![],
+        protocol_ciphers: vec![
+            ProtocolCipherGroup {
+                protocol: Protocol::Tls13,
+                ciphers: vec![c_rec],
+            },
+            ProtocolCipherGroup {
+                protocol: Protocol::Tls12,
+                ciphers: vec![c_rec, c_weak, c_3des],
+            },
+        ],
+        supported_ciphers: vec![c_rec, c_weak, c_3des],
+        rejected_ciphers_count: 50,
+        server_cipher_preference: None,
+        certificate: None,
+        findings: vec![],
+        overall_rating: SecurityRating::Weak,
+        scan_duration_ms: 100,
+    };
+
+    report.filter_vulnerable_ciphers();
+
+    // TLS 1.3 group had only recommended cipher, so it should be filtered out
+    assert_eq!(report.protocol_ciphers.len(), 1);
+    assert_eq!(report.protocol_ciphers[0].protocol, Protocol::Tls12);
+    assert_eq!(report.protocol_ciphers[0].ciphers.len(), 2);
+    assert_eq!(report.supported_ciphers.len(), 2);
+    assert!(report.supported_ciphers.iter().all(|c| c.is_vulnerable()));
 }

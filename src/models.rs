@@ -66,17 +66,6 @@ impl Protocol {
             Protocol::Tls13 => SecurityRating::Recommended,
         }
     }
-
-    pub fn security_notes(&self) -> &'static str {
-        match self {
-            Protocol::Ssl2 => "Vulnerable to DROWN, broken ciphers, insecure MAC (RFC 6176 prohibited)",
-            Protocol::Ssl3 => "Vulnerable to POODLE, insecure MAC, weak CBC (RFC 7568 prohibited)",
-            Protocol::Tls10 => "Deprecated (RFC 8996), vulnerable to BEAST / Lucky13, outdated ciphers",
-            Protocol::Tls11 => "Deprecated (RFC 8996), weak SHA-1/MD5 PRF, lacks modern AEAD",
-            Protocol::Tls12 => "Standard protocol, secure when modern AEAD/PFS ciphers are configured",
-            Protocol::Tls13 => "Modern recommended protocol, mandatory PFS, robust AEAD ciphers only (RFC 8446)",
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -100,6 +89,16 @@ impl SecurityRating {
             SecurityRating::Critical => "CRITICAL",
         }
     }
+
+    pub fn is_vulnerable(&self) -> bool {
+        matches!(
+            self,
+            SecurityRating::Deprecated
+                | SecurityRating::Weak
+                | SecurityRating::Insecure
+                | SecurityRating::Critical
+        )
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,7 +106,6 @@ pub struct ProtocolResult {
     pub protocol: Protocol,
     pub supported: bool,
     pub rating: SecurityRating,
-    pub notes: String,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -124,7 +122,12 @@ pub struct CipherSuiteInfo {
     pub is_aead: bool,
     pub is_obsolete: bool,
     pub rating: SecurityRating,
-    pub vulnerability_note: Option<&'static str>,
+}
+
+impl CipherSuiteInfo {
+    pub fn is_vulnerable(&self) -> bool {
+        self.rating.is_vulnerable() || self.is_obsolete
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -192,4 +195,90 @@ pub struct ScanReport {
     pub findings: Vec<VulnerabilityFinding>,
     pub overall_rating: SecurityRating,
     pub scan_duration_ms: u64,
+}
+
+impl ScanReport {
+    pub fn filter_vulnerable_ciphers(&mut self) {
+        for group in &mut self.protocol_ciphers {
+            group.ciphers.retain(|c| c.is_vulnerable());
+        }
+        self.protocol_ciphers.retain(|group| !group.ciphers.is_empty());
+        self.supported_ciphers.retain(|c| c.is_vulnerable());
+    }
+
+    pub fn to_vulnerable_report(&self) -> VulnerableReport {
+        let vulnerable_protocols: Vec<Protocol> = self
+            .protocols
+            .iter()
+            .filter(|p| p.supported && (p.protocol.is_obsolete() || p.rating.is_vulnerable()))
+            .map(|p| p.protocol)
+            .collect();
+
+        let mut vulnerable_ciphers = Vec::new();
+        for group in &self.protocol_ciphers {
+            for c in &group.ciphers {
+                if c.is_vulnerable() {
+                    vulnerable_ciphers.push(VulnerableCipherEntry {
+                        protocol: group.protocol,
+                        id: format!("0x{:04x}", c.id),
+                        name: c.iana_name,
+                        rating: c.rating,
+                    });
+                }
+            }
+        }
+
+        let mut certificate_issues = Vec::new();
+        if let Some(ref cert) = self.certificate {
+            if cert.leaf.is_expired {
+                certificate_issues.push(format!(
+                    "Certificate expired {} days ago",
+                    cert.leaf.days_remaining.abs()
+                ));
+            } else if cert.leaf.days_remaining <= 14 {
+                certificate_issues.push(format!(
+                    "Certificate expiring soon ({} days remaining)",
+                    cert.leaf.days_remaining
+                ));
+            }
+            if cert.leaf.key_rating.is_vulnerable() {
+                certificate_issues.push(format!("Weak public key: {}", cert.leaf.public_key_type));
+            }
+            if cert.leaf.sig_alg_rating.is_vulnerable() {
+                certificate_issues.push(format!(
+                    "Weak signature algorithm: {}",
+                    cert.leaf.signature_algorithm
+                ));
+            }
+            if cert.trust_valid == Some(false) {
+                let err = cert.trust_error.as_deref().unwrap_or("Untrusted authority");
+                certificate_issues.push(format!("Trust validation failed: {}", err));
+            }
+        }
+
+        VulnerableReport {
+            target: self.target_host.clone(),
+            vulnerable_protocols,
+            vulnerable_ciphers,
+            certificate_issues,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct VulnerableCipherEntry {
+    pub protocol: Protocol,
+    pub id: String,
+    pub name: &'static str,
+    pub rating: SecurityRating,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct VulnerableReport {
+    pub target: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub vulnerable_protocols: Vec<Protocol>,
+    pub vulnerable_ciphers: Vec<VulnerableCipherEntry>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub certificate_issues: Vec<String>,
 }
